@@ -9,6 +9,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors()); // Permite peticiones desde tu frontend en React
 app.use(express.json()); // Permite recibir datos en formato JSON
 
+
+//rutas
+app.use('/api/clientes', require('./routes/cliente.routes')); 
+
 // Ruta de prueba
 app.get('/api', (req, res) => {
   res.json({ mensaje: '¡ API del taller mecánico ' });
@@ -17,5 +21,5 @@ app.get('/api', (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en en puerto ${PORT}`);
+  console.log(`Servidor corriendo en en puerto http://localhost:${PORT}`);
 });
