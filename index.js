@@ -6,37 +6,59 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
-// CORRECCIÓN: Las rutas están dentro de la carpeta 'src' según tu estructura
 const empleadoRoutes = require('./src/routes/empleados'); 
 const nominaRoutes = require('./src/routes/nomina');
 
-// Middlewares
-app.use(cors()); // Permite peticiones desde tu frontend en React
-app.use(express.json()); // Permite recibir datos en formato JSON
+app.use(cors());
+app.use(express.json());
 
-// Registro de rutas con el prefijo /api
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/nomina', nominaRoutes);
 
-// Ruta de prueba
 app.get('/api', (req, res) => {
   res.json({ mensaje: '¡Bienvenido a la API del Taller Mecánico!' });
 });
 
-// Ejemplo: Ruta para obtener todos los clientes
-app.get('/api/clientes', async (req, res) => {
+// RUTA PARA EL LOGIN CON CREDENCIALES DE PRUEBA
+app.post('/api/login', async (req, res) => {
+  const { usuario, password } = req.body;
+
+  // --- CREDENCIALES PARA PROBAR ---
+  if (usuario === "admin" && password === "12345") {
+    console.log("Acceso concedido con usuario de prueba");
+    return res.json({ 
+      success: true, 
+      mensaje: "¡Bienvenido (Prueba)!", 
+      empleado: { nombre: "Administrador", cargo: "Jefe" } 
+    });
+  }
+
+  // --- BÚSQUEDA EN BASE DE DATOS  ---
   try {
-    const clientes = await prisma.cliente.findMany();
-    res.json(clientes);
+    const empleadoEncontrado = await prisma.empleado.findFirst({
+      where: {
+        usuario: usuario,
+        password: password
+      }
+    });
+
+    if (empleadoEncontrado) {
+      res.json({ 
+        success: true, 
+        mensaje: "¡Bienvenido!", 
+        empleado: { nombre: empleadoEncontrado.nombre, cargo: empleadoEncontrado.cargo } 
+      });
+    } else {
+      res.status(401).json({ success: false, mensaje: "Usuario o contraseña incorrectos" });
+    }
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los clientes' });
+    console.error("Error de Prisma:", error.message);
+    res.status(500).json({ success: false, mensaje: "Error en el servidor" });
   }
 });
 
-// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`==============================================`);
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Módulo de Nómina y Empleados: LISTO`);
   console.log(`==============================================`);
 });
