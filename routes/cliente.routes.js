@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const clienteController = require('../controllers/cliente.controller');
 
+// Consulta específica de estado (React Frontend)
+router.get('/consulta/:cedula', clienteController.consultaEstadoCliente);
+
 // Obtener todos los clientes
 router.get('/', clienteController.obtenerClientes);
 

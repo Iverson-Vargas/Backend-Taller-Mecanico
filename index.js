@@ -9,10 +9,8 @@ const ordenRoutes = require('./routes/orden.routes');
 // Importaciones de módulos de la rama (rama Daviana)
 const empleadoRoutes = require('./src/routes/empleados'); 
 const nominaRoutes = require('./src/routes/nomina');
-const ordenesRoutes = require('./src/routes/ordenes');
 const facturasRoutes = require('./src/routes/facturas');
 const authRoutes = require('./src/routes/usuarios');
-const clientesRoutes = require('./src/routes/clientes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,8 +23,6 @@ app.use(express.json());
 // ===================================
 
 // Aseguramos montar primero las relativas al login y consultas específicas de Daviana
-app.use('/api/clientes', clientesRoutes); // Consulta de estado (frontend)
-app.use('/api/ordenes', ordenesRoutes);   // Consulta para facturación (frontend)
 app.use('/api/facturas', facturasRoutes);
 app.use('/api/auth', authRoutes);
 

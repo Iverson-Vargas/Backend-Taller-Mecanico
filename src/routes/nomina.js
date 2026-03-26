@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../../db');
 
 // 1. Obtener todos los empleados y sus comisiones (Para tu reporte de Admin)
 router.get('/resumen', async (req, res) => {
