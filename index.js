@@ -9,6 +9,8 @@ const PORT = process.env.PORT || 3000;
 // CORRECCIÓN: Las rutas están dentro de la carpeta 'src' según tu estructura
 const empleadoRoutes = require('./src/routes/empleados'); 
 const nominaRoutes = require('./src/routes/nomina');
+const ordenesRoutes = require('./src/routes/ordenes');
+const facturasRoutes = require('./src/routes/facturas');
 
 // Middlewares
 app.use(cors()); // Permite peticiones desde tu frontend en React
@@ -17,6 +19,11 @@ app.use(express.json()); // Permite recibir datos en formato JSON
 // Registro de rutas con el prefijo /api
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/nomina', nominaRoutes);
+
+// Registro de rutas para facturación
+// El frontend llama a estos endpoints en la raíz
+app.use('/api/ordenes', ordenesRoutes);
+app.use('/api/facturas', facturasRoutes);
 
 // Ruta de prueba
 app.get('/api', (req, res) => {
