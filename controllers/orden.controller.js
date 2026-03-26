@@ -1,11 +1,10 @@
 const prisma = require('../db');
 
-// GET - Listar todas las órdenes con sus datos relacionados
+// GET - Listar todas las órdenes
 const obtenerOrdenes = async (req, res) => {
     try {
         const ordenes = await prisma.ordenServicio.findMany({
             include: {
-                cliente: true,
                 carro: true,
                 mecanico: true
             }
@@ -18,57 +17,63 @@ const obtenerOrdenes = async (req, res) => {
 
 // POST - Crear una nueva orden
 const crearOrden = async (req, res) => {
-    const { fecha_emision, placa_carro, id_cliente, id_mecanico, total_estimado, estado } = req.body;
+    const { 
+        placa_carro, 
+        id_mecanico, 
+        diagnostico_inicial, 
+        estado 
+    } = req.body;
 
     try {
         const nuevaOrden = await prisma.ordenServicio.create({
             data: {
-                fecha_emision: new Date(fecha_emision), 
-                placa_carro: placa_carro, 
-                id_cliente: parseInt(id_cliente),
-                id_mecanico: id_mecanico ? parseInt(id_mecanico) : null,
-                total_estimado: parseFloat(total_estimado) || 0,
-                estado: estado || 'Pendiente'
+                placa_carro: placa_carro,
+                id_mecanico: id_mecanico || null,
+                diagnostico_inicial: diagnostico_inicial,
+                estado: estado || "recepcion"
+          
             }
         });
         res.status(201).json(nuevaOrden);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al crear la orden. Verifica que la placa y el cliente existan.' });
+        console.error("ERROR AL CREAR:", error);
+        res.status(500).json({ 
+            error: 'No se pudo crear la orden.',
+            detalle: error.message 
+        });
     }
 };
 
-// PUT - Actualizar orden por su ID
+// PUT - Actualizar orden
 const actualizarOrden = async (req, res) => {
-    const { id } = req.params; 
-    const { estado, total_estimado, id_mecanico } = req.body;
-
+    const { id } = req.params;
     try {
         const actualizada = await prisma.ordenServicio.update({
-            where: { id_orden: Number(id) }, 
-            data: {
-                estado: estado || undefined,
-                total_estimado: total_estimado ? parseFloat(total_estimado) : undefined,
-                id_mecanico: id_mecanico ? parseInt(id_mecanico) : undefined
-            }
+            where: { id_orden: Number(id) },
+            data: req.body
         });
         res.status(200).json(actualizada);
     } catch (error) {
-        res.status(500).json({ error: 'No se pudo actualizar la orden. Verifica el ID.' });
+        res.status(500).json({ error: 'Error al actualizar' });
     }
 };
 
-// DELETE - Eliminar una orden
+// DELETE - Eliminar orden
 const eliminarOrden = async (req, res) => {
     const { id } = req.params;
     try {
         await prisma.ordenServicio.delete({
             where: { id_orden: Number(id) }
         });
-        res.status(200).json({ mensaje: 'Orden eliminada correctamente' });
+        res.status(200).json({ mensaje: 'Orden eliminada' });
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar la orden.' });
+        res.status(500).json({ error: 'Error al eliminar' });
     }
 };
 
-module.exports = { obtenerOrdenes, crearOrden, actualizarOrden, eliminarOrden };
+module.exports = { 
+    obtenerOrdenes, 
+    crearOrden, 
+    actualizarOrden, 
+    eliminarOrden 
+};
