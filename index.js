@@ -8,6 +8,8 @@ const PORT = process.env.PORT || 3000;
 
 const empleadoRoutes = require('./src/routes/empleados'); 
 const nominaRoutes = require('./src/routes/nomina');
+const ordenesRoutes = require('./src/routes/ordenes');
+const facturasRoutes = require('./src/routes/facturas');
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +17,12 @@ app.use(express.json());
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/nomina', nominaRoutes);
 
+// Registro de rutas para facturación
+// El frontend llama a estos endpoints en la raíz
+app.use('/api/ordenes', ordenesRoutes);
+app.use('/api/facturas', facturasRoutes);
+
+// Ruta de prueba
 app.get('/api', (req, res) => {
   res.json({ mensaje: '¡Bienvenido a la API del Taller Mecánico!' });
 });
