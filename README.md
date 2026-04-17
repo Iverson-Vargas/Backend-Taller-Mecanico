@@ -74,7 +74,6 @@ Inventario y Compras: Control de stock de repuestos y gestión de proveedores.
 
 Facturación: Emisión de facturas vinculadas a las órdenes de servicio.
 
-
 ¡Con este archivo tu repositorio se verá impecable! 
 
 Ahora que ya tienes la base de datos montada, el README listo y el servidor configurado, ¿te

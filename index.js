@@ -1,42 +1,46 @@
 const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
 
-const app = express();
-const prisma = new PrismaClient();
-const PORT = process.env.PORT || 3000;
+// Importaciones de rutas recientes (rama desarrollo - HEAD)
+const clienteRoutes = require('./routes/cliente.routes');
+const carroRoutes = require('./routes/vehiculo.routes');
+const ordenRoutes = require('./routes/orden.routes');
 
-// CORRECCIÓN: Las rutas están dentro de la carpeta 'src' según tu estructura
+// Importaciones de módulos de la rama (rama Daviana)
 const empleadoRoutes = require('./src/routes/empleados'); 
 const nominaRoutes = require('./src/routes/nomina');
+const facturasRoutes = require('./src/routes/facturas');
+const authRoutes = require('./src/routes/usuarios');
 
-// Middlewares
-app.use(cors()); // Permite peticiones desde tu frontend en React
-app.use(express.json()); // Permite recibir datos en formato JSON
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Registro de rutas con el prefijo /api
+app.use(cors());
+app.use(express.json());
+
+// ===================================
+// REGISTRO DE RUTAS MEZCLADO (MERGED)
+// ===================================
+
+// Aseguramos montar primero las relativas al login y consultas específicas de Daviana
+app.use('/api/facturas', facturasRoutes);
+app.use('/api/auth', authRoutes);
+
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/nomina', nominaRoutes);
 
-// Ruta de prueba
+// Montamos las rutas de negocio CRUD del equipo de desarrollo posteriormente
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/carros', carroRoutes);
+app.use('/api/ordenes', ordenRoutes);
+
+// Ruta de prueba general
 app.get('/api', (req, res) => {
   res.json({ mensaje: '¡Bienvenido a la API del Taller Mecánico!' });
 });
 
-// Ejemplo: Ruta para obtener todos los clientes
-app.get('/api/clientes', async (req, res) => {
-  try {
-    const clientes = await prisma.cliente.findMany();
-    res.json(clientes);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los clientes' });
-  }
-});
-
-// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`==============================================`);
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Módulo de Nómina y Empleados: LISTO`);
   console.log(`==============================================`);
 });
