@@ -1,79 +1,226 @@
-# ⚙️ Backend - Taller Mecánico
+# API Taller Mecánico — Backend
 
-API REST robusta y escalable desarrollada para respaldar la gestión integral de un taller mecánico. Este sistema funciona como el núcleo de datos y lógica de negocio para administrar clientes, vehículos, inventario de repuestos, mecánicos y facturación.
+API RESTful para la gestión integral de un taller mecánico. Desarrollada con **Node.js**, **Express** y **Prisma ORM** sobre **PostgreSQL**. Sigue una arquitectura por capas (Rutas → Controladores → Servicios) con validaciones mediante `express-validator`.
 
-## 🛠️ Tecnologías Utilizadas
+**Autores:**
+- Iverson Vargas
+- Jose
+- Daviana
+- Anthony
+- Isis
+- Sebastian
 
-* **Entorno de ejecución:** Node.js
-* **Framework web:** Express.js
-* **ORM:** Prisma (v6)
-* **Base de Datos:** PostgreSQL
-* **Control de versiones:** Git / GitHub
+---
 
-## 📋 Requisitos Previos
+## Estructura del Proyecto
 
-Antes de instalar y correr el proyecto, asegúrate de tener instalado en tu sistema Windows:
-* [Node.js](https://nodejs.org/) (versión 18 o superior).
-* [PostgreSQL](https://www.postgresql.org/) y pgAdmin para la gestión de la base de datos local.
+```
+src/
+  app.js                          # Punto de entrada
+  servidor/
+    server.js                     # Clase Servidor (Express + rutas)
+  config/
+    prisma.config.js              # PrismaClient singleton
+  rutas/                          # Definición de endpoints HTTP
+    clientes.rutas.js
+    vehiculos.rutas.js
+    ordenes.rutas.js
+    servicios.rutas.js
+    inventario.rutas.js
+    empleados.rutas.js
+    nomina.rutas.js
+    facturas.rutas.js
+    gastos.rutas.js
+    auth.rutas.js
+    reportes.rutas.js
+  controladores/                  # Lógica que maneja req/res
+    clientes.controladores.js
+    vehiculos.controladores.js
+    ordenes.controladores.js
+    servicios.controladores.js
+    inventario.controladores.js
+    empleados.controladores.js
+    nomina.controladores.js
+    facturas.controladores.js
+    gastos.controladores.js
+    auth.controladores.js
+    reportes.controladores.js
+  servicios/                      # Lógica de negocio + Prisma
+    clientes.servicios.js
+    vehiculos.servicios.js
+    ordenes.servicios.js
+    servicios.servicios.js
+    inventario.servicios.js
+    empleados.servicios.js
+    nomina.servicios.js
+    facturas.servicios.js
+    gastos.servicios.js
+    auth.servicios.js
+    reportes.servicios.js
+  validators/                     # Validaciones con express-validator
+    clientes.validator.js
+    vehiculos.validator.js
+    ordenes.validator.js
+    servicios.validator.js
+    inventario.validator.js
+    empleados.validator.js
+    facturas.validator.js
+    gastos.validator.js
+    auth.validator.js
+  middlewares/
+    validate-fields.middleware.js  # Middleware de validación
+prisma/
+  schema.prisma                   # Modelos de la BD
+```
 
-## 🚀 Instalación y Configuración Local
+---
 
-Sigue estos pasos para levantar el servidor en tu entorno local de desarrollo:
+## Instalación
 
-### 1. Clonar el repositorio
-
-bash
-git clone [https://github.com/Iverson-Vargas/Backend-Taller-Mecanico.git](https://github.com/Iverson-Vargas/Backend-Taller-Mecanico.git)
-
-cd Backend-Taller-Mecanico
-
-2. Instalar las dependencias
-Instala todos los paquetes necesarios para Node, Express y Prisma ejecutando:
-
-Bash
+```bash
+# 1. Instalar dependencias
 npm install
 
-3. Configurar las Variables de Entorno
-Crea un archivo llamado .env en la raíz del proyecto y configura la conexión a tu base de datos local y el puerto del servidor. Puedes usar este formato:
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tu configuración de PostgreSQL
 
-Fragmento de código
-# Configuración del servidor
-PORT=3000
+# 3. Generar el cliente de Prisma
+npm run prisma:generate
 
-# Conexión a la base de datos PostgreSQL (Ajusta TU_CONTRASEÑA)
-DATABASE_URL="postgresql://postgres:TU_CONTRASEÑA@localhost:5432/taller_mecanico?schema=public"
-4. Generar el Cliente de Prisma y Sincronizar
-Para que Prisma reconozca la estructura de la base de datos y genere los tipos de datos correctos, ejecuta:
+# 4. Ejecutar migraciones
+npm run prisma:migrate
 
-Bash
-npx prisma generate
+# 5. Iniciar en modo desarrollo
+npm run start:dev
+```
 
-** Si es la primera vez que levantas la base de datos o necesitas crear las tablas desde cero, ejecuta la migración:
+La API estará disponible en `http://localhost:3000`
 
-Bash
-npx prisma migrate dev --name init
+---
 
-5. Iniciar el Servidor
-Para iniciar el servidor en modo desarrollo (con recarga automática mediante nodemon), utiliza:
+## Comandos
 
-Bash
-npm run dev
+| Comando | Descripción |
+|---|---|
+| `npm run start:dev` | Desarrollo con recarga automática (nodemon) |
+| `npm start` | Producción |
+| `npm run prisma:generate` | Regenerar el cliente Prisma |
+| `npm run prisma:migrate` | Aplicar migraciones a la BD |
+| `npm run prisma:studio` | Visualizar datos en la BD |
+| `npm run prisma:reset` | Resetear la BD (elimina datos) |
 
-La consola debería mostrar el mensaje: Servidor corriendo en http://localhost:3000
+---
 
-📂 Estructura Principal de la Base de Datos
-El sistema está diseñado con las siguientes entidades principales:
+## Endpoints
 
-Empleados: Gestión de mecánicos y personal administrativo (usando Cédula/RIF como identificador).
+Base URL: `http://localhost:3000/api`
 
-Clientes y Carros: Relación de dueños y sus vehículos (identificados por placa).
+### Clientes (`/api/clientes`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todos los clientes |
+| GET | `/:id` | Obtiene un cliente por ID |
+| GET | `/consulta/:cedula` | Consulta estado del cliente por cédula |
+| POST | `/` | Crea un nuevo cliente |
+| POST | `/recepcion` | Registra cliente + vehículo (transacción) |
+| PUT | `/:id` | Actualiza un cliente |
+| DELETE | `/:id` | Elimina un cliente |
 
-Órdenes de Servicio: Registro de diagnósticos y asignación de mecánicos a vehículos.
+### Vehículos (`/api/carros`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todos los vehículos |
+| GET | `/:placa` | Obtiene un vehículo por placa |
+| POST | `/` | Registra un nuevo vehículo |
+| PUT | `/:placa` | Actualiza un vehículo |
+| DELETE | `/:placa` | Elimina un vehículo |
 
-Inventario y Compras: Control de stock de repuestos y gestión de proveedores.
+### Órdenes de Servicio (`/api/ordenes`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todas las órdenes |
+| GET | `/finalizadas` | Lista órdenes finalizadas (para facturar) |
+| GET | `/:id` | Detalle de una orden |
+| POST | `/` | Crea una nueva orden |
+| PUT | `/:id` | Actualiza una orden (estado, diagnóstico, etc.) |
+| DELETE | `/:id` | Elimina una orden |
 
-Facturación: Emisión de facturas vinculadas a las órdenes de servicio.
+### Catálogo de Servicios (`/api/servicios`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista el catálogo de servicios |
+| GET | `/:id` | Obtiene un servicio por ID |
+| POST | `/` | Crea un nuevo servicio tabulado |
+| PUT | `/:id` | Actualiza un servicio |
+| DELETE | `/:id` | Elimina un servicio |
 
-¡Con este archivo tu repositorio se verá impecable! 
+### Inventario (`/api/inventario`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista repuestos en inventario |
+| GET | `/:id` | Obtiene un repuesto por ID |
+| POST | `/` | Registra un nuevo repuesto |
+| PUT | `/:id` | Actualiza un repuesto |
+| DELETE | `/:id` | Elimina un repuesto |
 
-Ahora que ya tienes la base de datos montada, el README listo y el servidor configurado, ¿te
+### Empleados (`/api/empleados`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todos los empleados |
+| GET | `/:id` | Obtiene un empleado por cédula |
+| POST | `/` | Registra un nuevo empleado |
+| PUT | `/:id` | Actualiza un empleado |
+| POST | `/calcular-comision` | Calcula y registra comisión de una orden |
+| GET | `/mis-comisiones/:id` | Historial de comisiones de un empleado |
+
+### Nómina (`/api/nomina`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/resumen` | Resumen de nómina por empleado |
+| GET | `/historial` | Historial de pagos |
+
+### Facturas (`/api/facturas`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todas las facturas |
+| GET | `/:id` | Detalle de una factura |
+| POST | `/` | Genera una nueva factura (cambia estado de O.S. a "facturada") |
+
+### Gastos (`/api/gastos`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Lista todos los gastos |
+| GET | `/:id` | Obtiene un gasto por ID |
+| POST | `/` | Registra un nuevo gasto |
+| PUT | `/:id` | Actualiza un gasto |
+| DELETE | `/:id` | Elimina un gasto |
+
+### Autenticación (`/api/auth`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/login` | Autenticar usuario (correo o cédula + contraseña) |
+
+### Reportes Contables (`/api/reportes`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/balance` | Balance General (Activos, Pasivos, Patrimonio) |
+| GET | `/estado-resultados` | Estado de Resultados (Ingresos vs. Egresos) |
+| GET | `/rentabilidad-servicios` | Rentabilidad por tipo de servicio |
+
+---
+
+## Variables de Entorno
+
+| Variable | Descripción | Default |
+|---|---|---|
+| `API_PORT` | Puerto del servidor | `3000` |
+| `DATABASE_URL` | URL de conexión a PostgreSQL | — |
+
+---
+
+## Requisitos
+
+- Node.js >= 18
+- npm
+- PostgreSQL (local o remoto)
