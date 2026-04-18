@@ -10,4 +10,10 @@ export class NominaController {
     const { status, data } = await NominaServices.getHistorial();
     return res.status(status).json(data.historial || []);
   };
+
+  pagar = async (req, res) => {
+    const { id_empleado, monto_total } = req.body;
+    const response = await NominaServices.pagar(id_empleado, monto_total);
+    return res.status(response.status).json(response);
+  };
 }

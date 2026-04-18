@@ -22,5 +22,22 @@ export const NominaServices = {
       console.error(error);
       return { message: 'Error al obtener historial', status: 500 };
     }
+  },
+
+  pagar: async (id_empleado, monto_total) => {
+    try {
+      const pago = await prisma.nomina.create({
+        data: {
+          id_empleado,
+          monto_total: parseFloat(monto_total || 0),
+          tipo_pago: 'liquidacion',
+          fecha_pago: new Date()
+        }
+      });
+      return { message: 'Pago registrado exitosamente', status: 201, data: { pago } };
+    } catch (error) {
+      console.error('Error procesando pago:', error);
+      return { message: 'Error procesando el pago', status: 500 };
+    }
   }
 };

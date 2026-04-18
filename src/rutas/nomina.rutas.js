@@ -6,5 +6,6 @@ const controller = new NominaController();
 
 router.get('/resumen', controller.getResumen);
 router.get('/historial', controller.getHistorial);
+router.post('/pagar', controller.pagar);
 
 export default router;
