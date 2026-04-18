@@ -1,22 +1,26 @@
 {
   "name": "backend-taller-mecanico",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API RESTful para el sistema de gestión de un taller mecánico. Arquitectura por capas con Express y Prisma.",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node src/app.js",
+    "start:dev": "nodemon src/app.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio",
+    "prisma:reset": "npx prisma migrate reset"
   },
   "keywords": [],
-  "author": "",
+  "author": "Iverson Vargas",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@prisma/client": "^6.19.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
