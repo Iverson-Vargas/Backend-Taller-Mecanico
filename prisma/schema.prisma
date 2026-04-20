@@ -11,10 +11,10 @@ datasource db {
 }
 
 model Carro {
-  placa       String           @id @db.VarChar(15)
+  placa       String          @id @db.VarChar(15)
   id_cliente  Int?
-  marca       String?          @db.VarChar(50)
-  modelo      String?          @db.VarChar(50)
+  marca       String?         @db.VarChar(50)
+  modelo      String?         @db.VarChar(50)
   ano         Int?
   kilometraje Int?
   categoria   String?          @db.VarChar(30) // "Sencillo", "Carga Pesada", "Alta Gama"
@@ -37,12 +37,18 @@ model Cliente {
 }
 
 model Compra {
-  id_compra       Int              @id @default(autoincrement())
-  id_proveedor    Int?
-  monto_total     Decimal?         @db.Decimal(12, 2)
-  fecha           DateTime?        @default(now()) @db.Timestamp(6)
-  proveedor       Proveedor?       @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction)
-  detalle_compras DetalleCompra[]
+  id_compra              Int             @id @default(autoincrement())
+  id_proveedor           Int?
+  registrado_por_usuario String?         @db.VarChar(20)
+  descripcion            String?         @db.VarChar(100)
+  monto_total            Decimal?        @db.Decimal(12, 2)
+  fecha                  DateTime?       @default(now()) @db.Timestamp(6)
+  estado                 String?         @default("POR PAGAR") @db.VarChar(20)
+
+  // Relaciones corregidas
+  usuario                Usuario?        @relation(fields: [registrado_por_usuario], references: [cedula_rif])
+  proveedor              Proveedor?      @relation(fields: [id_proveedor], references: [id_proveedor])
+  detalle_compras        DetalleCompra[]
 
   @@map("compras")
 }
@@ -129,12 +135,17 @@ model Factura {
 
 model Gasto {
   id_gasto               Int       @id @default(autoincrement())
+  id_proveedor           Int?      
   registrado_por_usuario String?   @db.VarChar(20)
   descripcion            String?   @db.VarChar(100)
   monto                  Decimal?  @db.Decimal(12, 2)
   categoria              String?   @db.VarChar(50) // "alquiler", "servicios_basicos", "herramientas", "otros"
   fecha                  DateTime? @default(now()) @db.Timestamp(6)
-  usuario                Usuario?  @relation(fields: [registrado_por_usuario], references: [cedula_rif], onDelete: NoAction, onUpdate: NoAction)
+  estado                 String?   @default("POR PAGAR") @db.VarChar(20)
+
+  // Relaciones corregidas
+  usuario                Usuario?    @relation(fields: [registrado_por_usuario], references: [cedula_rif])
+  proveedor              Proveedor?  @relation(fields: [id_proveedor], references: [id_proveedor])
 
   @@map("gastos")
 }
@@ -185,12 +196,17 @@ model OrdenServicio {
 }
 
 model Proveedor {
-  id_proveedor      Int      @id @default(autoincrement())
-  rif               String   @db.VarChar(20)
-  nombre_empresa    String?  @db.VarChar(100)
-  nombre_contacto   String?  @db.VarChar(75)
-  apellido_contacto String?  @db.VarChar(75)
+  id_proveedor      Int       @id @default(autoincrement())
+  id_persona        Int?
+  rif               String    @db.VarChar(20)
+  nombre_empresa    String?   @db.VarChar(100)
+  especialidad      String?   @db.VarChar(100)
+  nombre_contacto   String?   @db.VarChar(75)
+  apellido_contacto String?   @db.VarChar(75)
+  
+  // Relaciones inversas añadidas para evitar errores P1012
   compras           Compra[]
+  gastos            Gasto[]
 
   @@map("proveedores")
 }
@@ -214,7 +230,10 @@ model Usuario {
   cedula_rif String  @id @db.VarChar(20)
   nombre     String? @db.VarChar(75)
   apellido   String? @db.VarChar(75)
+  
+  // Relaciones inversas añadidas
   gastos     Gasto[]
+  compras    Compra[]
 
   @@map("usuarios")
 }
