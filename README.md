@@ -92,7 +92,7 @@ npm run prisma:generate
 npm run prisma:migrate
 
 # 5. Iniciar en modo desarrollo
-npm run start:dev
+npm run dev
 ```
 
 La API estará disponible en `http://localhost:3000`
