@@ -1,58 +1,42 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { ClienteServices } from '../servicios/clientes.servicios.js';
 
-const registrarRecepcion = async (req, res) => {
-    const { 
-        cedula_rif, nombre, apellido, telefono, direccion, correo,
-        placa, marca, modelo, ano, kilometraje, gasolina 
-    } = req.body;
+export class ClienteController {
+    consultaPorCedula = async (req, res) => {
+        const { cedula } = req.params;
+        const { message, status, data } = await ClienteServices.consultaPorCedula(cedula);
+        return res.status(status).json({ message, data });
+    };
 
-    try {
-        const resultado = await prisma.$transaction(async (tx) => {
-            // 1. Buscar o Crear Cliente
-            let cliente = await tx.cliente.findUnique({
-                where: { cedula_rif: cedula_rif }
-            });
+    getAll = async (req, res) => {
+        const { message, status, data } = await ClienteServices.getAll();
+        return res.status(status).json({ message, data });
+    };
 
-            if (!cliente) {
-                cliente = await tx.cliente.create({
-                    data: {
-                        cedula_rif,
-                        nombre,
-                        apellido,
-                        telefono,
-                        direccion,
-                        correo
-                    }
-                });
-            }
+    getOne = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await ClienteServices.getOne(id);
+        return res.status(status).json({ message, data });
+    };
 
-            // 2. Registrar el Carro vinculado al Cliente
-            const nuevoCarro = await tx.carro.upsert({
-                where: { placa: placa },
-                update: {
-                    id_cliente: cliente.id_cliente,
-                    kilometraje: parseInt(kilometraje),
-                    capacidad_tanque: gasolina
-                },
-                create: {
-                    placa,
-                    marca,
-                    modelo,
-                    ano: parseInt(ano),
-                    kilometraje: parseInt(kilometraje),
-                    capacidad_tanque: gasolina,
-                    id_cliente: cliente.id_cliente
-                }
-            });
+    created = async (req, res) => {
+        const { message, status, data } = await ClienteServices.create(req.body);
+        return res.status(status).json({ message, data });
+    };
 
-            return { cliente, nuevoCarro };
-        });
+    updated = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await ClienteServices.update(id, req.body);
+        return res.status(status).json({ message, data });
+    };
 
-        res.status(201).json({ mensaje: "Registro completado", data: resultado });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+    deleted = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await ClienteServices.delete(id);
+        return res.status(status).json({ message, data });
+    };
 
-module.exports = { registrarRecepcion };
+    registroRecepcion = async (req, res) => {
+        const { message, status, data } = await ClienteServices.registroRecepcion(req.body);
+        return res.status(status).json({ message, data });
+    };
+}

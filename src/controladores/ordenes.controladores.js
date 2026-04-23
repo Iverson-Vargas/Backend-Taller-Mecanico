@@ -1,26 +1,36 @@
-const registrarOrden = async (req, res) => {
-    const {
-        placa_carro, id_mecanico, motivo_visita, falla_declarada,
-        tiene_caucho, tiene_radio, tiene_rayones, observaciones
-    } = req.body;
+import { OrdenServices } from '../servicios/ordenes.servicios.js';
 
-    try {
-        const nuevaOrden = await prisma.ordenServicio.create({
-            data: {
-                placa_carro,
-                id_mecanico, // Debe coincidir con un ID de la tabla Empleado
-                motivo_visita,
-                falla_declarada,
-                tiene_caucho: Boolean(tiene_caucho),
-                tiene_radio: Boolean(tiene_radio),
-                tiene_rayones: Boolean(tiene_rayones),
-                observaciones,
-                estado: "Activa"
-            }
-        });
+export class OrdenController {
+    getFinalizadas = async (req, res) => {
+        const { message, status, data } = await OrdenServices.getFinalizadas();
+        return res.status(status).json({ message, data });
+    };
 
-        res.status(201).json(nuevaOrden);
-    } catch (error) {
-        res.status(500).json({ error: "Error al crear la orden" });
-    }
-};
+    getAll = async (req, res) => {
+        const { message, status, data } = await OrdenServices.getAll();
+        return res.status(status).json({ message, data });
+    };
+
+    getOne = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await OrdenServices.getOne(id);
+        return res.status(status).json({ message, data });
+    };
+
+    created = async (req, res) => {
+        const { message, status, data } = await OrdenServices.create(req.body);
+        return res.status(status).json({ message, data });
+    };
+
+    updated = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await OrdenServices.update(id, req.body);
+        return res.status(status).json({ message, data });
+    };
+
+    deleted = async (req, res) => {
+        const { id } = req.params;
+        const { message, status, data } = await OrdenServices.delete(id);
+        return res.status(status).json({ message, data });
+    };
+}
