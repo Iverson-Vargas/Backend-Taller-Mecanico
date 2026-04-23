@@ -1,97 +1,81 @@
 import { prisma } from '../config/prisma.config.js';
 
 export const OrdenServices = {
-  getAll: async () => {
-    try {
-      const ordenes = await prisma.ordenServicio.findMany({
-        include: { carro: true, mecanico: true }
-      });
-      return { message: 'Órdenes encontradas', status: 200, data: { ordenes, total: ordenes.length } };
-    } catch (error) {
-      console.error(error);
-      return { message: 'Error al obtener órdenes', status: 500 };
-    }
-  },
-
-  getById: async (id) => {
-    try {
-      const orden = await prisma.ordenServicio.findUnique({
-        where: { id_orden: id },
-        include: {
-          carro: true,
-          mecanico: true,
-          detalle_orden_repuestos: { include: { repuesto: true } },
-          detalle_orden_servicios: { include: { servicio: true } }
-        }
-      });
-      if (!orden) return { message: 'Orden no encontrada', status: 404, data: {} };
-      return { message: 'Orden encontrada', status: 200, data: orden };
-    } catch (error) {
-      console.error(error);
-      return { message: 'Error al obtener detalle de la orden', status: 500 };
-    }
-  },
-
   getFinalizadas: async () => {
     try {
-      const ordenesFinalizadas = await prisma.ordenServicio.findMany({
+      const ordenes = await prisma.ordenServicio.findMany({
         where: { estado: 'finalizada' },
-        select: {
-          id_orden: true,
-          placa_carro: true,
-          carro: { select: { marca: true, modelo: true } }
-        }
+        include: { carro: { include: { cliente: true } } }
       });
-      const respuesta = ordenesFinalizadas.map(orden => ({
-        id_orden: orden.id_orden,
-        placa_carro: orden.placa_carro,
-        descripcion: orden.carro ? `${orden.carro.marca} ${orden.carro.modelo} - ${orden.placa_carro}` : orden.placa_carro
-      }));
-      return { message: 'Órdenes finalizadas encontradas', status: 200, data: respuesta };
+      return { message: 'Órdenes finalizadas obtenidas', status: 200, data: ordenes };
     } catch (error) {
-      console.error(error);
       return { message: 'Error al obtener órdenes finalizadas', status: 500 };
     }
   },
 
-  create: async (ordenData) => {
+  getAll: async () => {
+    try {
+      const ordenes = await prisma.ordenServicio.findMany({
+        include: { carro: { include: { cliente: true } }, mecanico: true }
+      });
+      return { message: 'Órdenes obtenidas', status: 200, data: ordenes };
+    } catch (error) {
+      return { message: 'Error al obtener órdenes', status: 500 };
+    }
+  },
+
+  getOne: async (id) => {
+    try {
+      const orden = await prisma.ordenServicio.findUnique({
+        where: { id_orden: Number(id) },
+        include: { carro: { include: { cliente: true } }, mecanico: true, detalles_repuestos: true, detalles_servicios: true }
+      });
+      if (!orden) return { message: 'Orden no encontrada', status: 404 };
+      return { message: 'Orden obtenida', status: 200, data: orden };
+    } catch (error) {
+      return { message: 'Error al obtener orden', status: 500 };
+    }
+  },
+
+  create: async (data) => {
     try {
       const nueva = await prisma.ordenServicio.create({
         data: {
-          placa_carro: ordenData.placa_carro,
-          id_mecanico: ordenData.id_mecanico || null,
-          diagnostico_inicial: ordenData.diagnostico_inicial,
-          diagnostico_tecnico: ordenData.diagnostico_tecnico || null,
-          estado: ordenData.estado || 'recepcion',
-          prioridad: ordenData.prioridad || 'normal'
+          placa_carro: data.placa_carro,
+          id_mecanico: data.id_mecanico || null,
+          motivo_visita: data.motivo_visita || data.diagnostico_inicial,
+          falla_declarada: data.falla_declarada,
+          tiene_caucho: Boolean(data.tiene_caucho),
+          tiene_radio: Boolean(data.tiene_radio),
+          tiene_rayones: Boolean(data.tiene_rayones),
+          observaciones: data.observaciones,
+          estado: data.estado || 'recepcion'
         }
       });
-      return { message: 'Orden creada exitosamente', status: 201, data: { orden: nueva } };
+      return { message: 'Orden creada', status: 201, data: nueva };
     } catch (error) {
-      console.error(error);
+      console.error("Error en orden:", error);
       return { message: 'Error al crear orden', status: 500 };
     }
   },
 
-  update: async (id, ordenData) => {
+  update: async (id, data) => {
     try {
-      const actualizada = await prisma.ordenServicio.update({
-        where: { id_orden: id },
-        data: ordenData
+      const orden = await prisma.ordenServicio.update({
+        where: { id_orden: Number(id) },
+        data
       });
-      return { message: 'Orden actualizada', status: 200, data: { orden: actualizada } };
+      return { message: 'Orden actualizada', status: 200, data: orden };
     } catch (error) {
-      console.error(error);
       return { message: 'Error al actualizar orden', status: 500 };
     }
   },
 
   delete: async (id) => {
     try {
-      await prisma.ordenServicio.delete({ where: { id_orden: id } });
+      await prisma.ordenServicio.delete({ where: { id_orden: Number(id) } });
       return { message: 'Orden eliminada', status: 200 };
     } catch (error) {
-      console.error(error);
       return { message: 'Error al eliminar orden', status: 500 };
     }
   }
