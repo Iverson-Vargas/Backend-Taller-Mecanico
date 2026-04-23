@@ -1,33 +1,26 @@
-import { OrdenServices } from '../servicios/ordenes.servicios.js';
+const registrarOrden = async (req, res) => {
+    const {
+        placa_carro, id_mecanico, motivo_visita, falla_declarada,
+        tiene_caucho, tiene_radio, tiene_rayones, observaciones
+    } = req.body;
 
-export class OrdenController {
-  getAll = async (req, res) => {
-    const { message, status, data } = await OrdenServices.getAll();
-    return res.status(status).json({ message, data });
-  };
+    try {
+        const nuevaOrden = await prisma.ordenServicio.create({
+            data: {
+                placa_carro,
+                id_mecanico, // Debe coincidir con un ID de la tabla Empleado
+                motivo_visita,
+                falla_declarada,
+                tiene_caucho: Boolean(tiene_caucho),
+                tiene_radio: Boolean(tiene_radio),
+                tiene_rayones: Boolean(tiene_rayones),
+                observaciones,
+                estado: "Activa"
+            }
+        });
 
-  getOne = async (req, res) => {
-    const { message, status, data } = await OrdenServices.getById(Number(req.params.id));
-    return res.status(status).json(data);
-  };
-
-  getFinalizadas = async (req, res) => {
-    const { message, status, data } = await OrdenServices.getFinalizadas();
-    return res.status(status).json(data);
-  };
-
-  created = async (req, res) => {
-    const { message, status, data } = await OrdenServices.create(req.body);
-    return res.status(status).json({ message, data });
-  };
-
-  updated = async (req, res) => {
-    const { message, status, data } = await OrdenServices.update(Number(req.params.id), req.body);
-    return res.status(status).json({ message, data });
-  };
-
-  deleted = async (req, res) => {
-    const { message, status } = await OrdenServices.delete(Number(req.params.id));
-    return res.status(status).json({ message });
-  };
-}
+        res.status(201).json(nuevaOrden);
+    } catch (error) {
+        res.status(500).json({ error: "Error al crear la orden" });
+    }
+};
