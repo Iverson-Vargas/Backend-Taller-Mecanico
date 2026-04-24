@@ -7,12 +7,14 @@ export class ReporteController {
   };
 
   getEstadoResultados = async (req, res) => {
-    const { message, status, data } = await ReporteServices.getEstadoResultados();
+    const { startDate, endDate } = req.query;
+    const { message, status, data } = await ReporteServices.getEstadoResultados(startDate, endDate);
     return res.status(status).json({ message, data });
   };
 
   getRentabilidadServicios = async (req, res) => {
-    const { message, status, data } = await ReporteServices.getRentabilidadServicios();
+    const { startDate, endDate } = req.query;
+    const { message, status, data } = await ReporteServices.getRentabilidadServicios(startDate, endDate);
     return res.status(status).json({ message, data });
   };
 }

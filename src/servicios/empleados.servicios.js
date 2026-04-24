@@ -1,9 +1,28 @@
 import { prisma } from '../config/prisma.config.js';
 
 export const EmpleadoServices = {
-  getAll: async () => {
+  getAll: async (startDate, endDate) => {
     try {
-      const empleados = await prisma.empleado.findMany({ include: { nominas: true } });
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.createdAt = {
+          gte: new Date(startDate),
+          lte: new Date(endDate + 'T23:59:59.999Z')
+        };
+      }
+
+      const empleados = await prisma.empleado.findMany({ 
+        include: { 
+          nominas: true,
+          _count: {
+            select: {
+              ordenes: {
+                where: dateFilter
+              }
+            }
+          }
+        } 
+      });
       return { message: 'Empleados encontrados', status: 200, data: { empleados, total: empleados.length } };
     } catch (error) {
       console.error(error);

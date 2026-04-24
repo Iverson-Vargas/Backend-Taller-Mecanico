@@ -17,15 +17,15 @@ export const ReporteServices = {
       // Pasivos: Comisiones pendientes (empleados con comisiones no liquidadas)
       const empleados = await prisma.empleado.findMany({
         where: { aplica_comision: true },
-        include: { nominas: true, ordenes_servicio: { include: { detalle_orden_servicios: true } } }
+        include: { nominas: true, ordenes: { include: { detalles_servicios: true } } }
       });
 
       let totalPasivosLaborales = 0;
       for (const emp of empleados) {
         const totalComisionesPagadas = emp.nominas.reduce((acc, n) => acc + Number(n.monto_comision || 0), 0);
         let totalComisionesGeneradas = 0;
-        for (const orden of emp.ordenes_servicio) {
-          const manoObra = orden.detalle_orden_servicios.reduce((acc, d) => acc + Number(d.precio_aplicado || 0), 0);
+        for (const orden of emp.ordenes) {
+          const manoObra = orden.detalles_servicios.reduce((acc, d) => acc + Number(d.precio_aplicado || 0), 0);
           totalComisionesGeneradas += manoObra * (Number(emp.monto_comision_fija || 0) / 100);
         }
         totalPasivosLaborales += Math.max(0, totalComisionesGeneradas - totalComisionesPagadas);
@@ -56,15 +56,28 @@ export const ReporteServices = {
   /**
    * Estado de Resultados: Ingresos totales vs. Gastos (Nómina + Repuestos + Servicios básicos).
    */
-  getEstadoResultados: async () => {
+  getEstadoResultados: async (startDate, endDate) => {
     try {
-      const facturas = await prisma.factura.findMany();
+      const dateFilterFactura = {};
+      const dateFilterGasto = {};
+      const dateFilterNomina = {};
+
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate + 'T23:59:59.999Z');
+        
+        dateFilterFactura.fecha_emision = { gte: start, lte: end };
+        dateFilterGasto.fecha = { gte: start, lte: end };
+        dateFilterNomina.fecha_pago = { gte: start, lte: end };
+      }
+
+      const facturas = await prisma.factura.findMany({ where: dateFilterFactura });
       const totalIngresos = facturas.reduce((acc, f) => acc + Number(f.monto_total), 0);
 
-      const nominas = await prisma.nomina.findMany();
+      const nominas = await prisma.nomina.findMany({ where: dateFilterNomina });
       const totalNomina = nominas.reduce((acc, n) => acc + Number(n.monto_comision || 0), 0);
 
-      const gastos = await prisma.gasto.findMany();
+      const gastos = await prisma.gasto.findMany({ where: dateFilterGasto });
       const totalGastos = gastos.reduce((acc, g) => acc + Number(g.monto || 0), 0);
 
       const gastosPorCategoria = {};
@@ -95,10 +108,24 @@ export const ReporteServices = {
   /**
    * Rentabilidad por Servicio: Qué reparaciones generan mayor margen.
    */
-  getRentabilidadServicios: async () => {
+  getRentabilidadServicios: async (startDate, endDate) => {
     try {
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.createdAt = {
+          gte: new Date(startDate),
+          lte: new Date(endDate + 'T23:59:59.999Z')
+        };
+      }
+
       const servicios = await prisma.servicio.findMany({
-        include: { detalle_orden_servicios: true }
+        include: { 
+          detalle_orden_servicios: {
+            where: {
+              orden: dateFilter
+            }
+          } 
+        }
       });
 
       const rentabilidad = servicios.map(servicio => {
@@ -118,7 +145,6 @@ export const ReporteServices = {
         };
       });
 
-      // Ordenar por ingreso total descendente
       rentabilidad.sort((a, b) => b.ingreso_total - a.ingreso_total);
 
       return {

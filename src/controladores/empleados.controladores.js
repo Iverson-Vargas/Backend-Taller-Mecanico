@@ -2,7 +2,8 @@ import { EmpleadoServices } from '../servicios/empleados.servicios.js';
 
 export class EmpleadoController {
   getAll = async (req, res) => {
-    const { message, status, data } = await EmpleadoServices.getAll();
+    const { startDate, endDate } = req.query;
+    const { message, status, data } = await EmpleadoServices.getAll(startDate, endDate);
     return res.status(status).json({ message, data });
   };
 
