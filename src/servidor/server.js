@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 
-// Importar todas las rutas
 import clientesRoutes from '../rutas/clientes.rutas.js';
 import vehiculosRoutes from '../rutas/vehiculos.rutas.js';
 import ordenesRoutes from '../rutas/ordenes.rutas.js';
@@ -26,10 +25,9 @@ export class Servidor {
 
     this.middlewares();
 
-    // Definición centralizada de todas las rutas
     this.rutas = {
       clientes:   `${this.pre}/clientes`,
-      vehiculos:  `${this.pre}/carros`,       // Mantiene /api/carros para compatibilidad con el frontend
+      vehiculos:  `${this.pre}/carros`,
       ordenes:    `${this.pre}/ordenes`,
       servicios:  `${this.pre}/servicios`,
       inventario: `${this.pre}/inventario`,
@@ -45,10 +43,16 @@ export class Servidor {
     this.routes();
   }
 
-  middlewares = () => {
-    this.app.use(cors());
+  middlewares() {
+    this.app.use(cors({
+      origin: ['http://localhost:5173', 'http://localhost:3000'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization']
+    }));
     this.app.use(express.json());
-  };
+    this.app.use(express.static('public'));
+  }
 
   routes = () => {
     this.app.use(this.rutas.clientes, clientesRoutes);
@@ -64,10 +68,8 @@ export class Servidor {
     this.app.use(this.rutas.reportes, reportesRoutes);
     this.app.use(this.rutas.contabilidad, contabilidadRoutes);
     
-    // Alias para compatibilidad con el frontend antiguo
     this.app.use(`${this.pre}/egresos`, contabilidadRoutes);
 
-    // Ruta raíz de la API
     this.app.get(this.pre, (req, res) => {
       res.json({
         mensaje: '¡Bienvenido a la API del Taller Mecánico!',
@@ -79,11 +81,7 @@ export class Servidor {
 
   listen = () => {
     this.app.listen(this.port, () => {
-      console.log(`==============================================`);
-      console.log(`  🔧 Taller Mecánico API`);
-      console.log(`  🚀 Servidor corriendo en http://localhost:${this.port}`);
-      console.log(`  📡 API disponible en http://localhost:${this.port}${this.pre}`);
-      console.log(`==============================================`);
+      console.log(`Servidor corriendo en puerto ${this.port}`);
     });
   };
 }
