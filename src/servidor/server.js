@@ -13,6 +13,7 @@ import facturasRoutes from '../rutas/facturas.rutas.js';
 import gastosRoutes from '../rutas/gastos.rutas.js';
 import authRoutes from '../rutas/auth.rutas.js';
 import reportesRoutes from '../rutas/reportes.rutas.js';
+import contabilidadRoutes from '../rutas/contabilidad.rutas.js';
 
 export class Servidor {
   app;
@@ -20,7 +21,7 @@ export class Servidor {
 
   constructor() {
     this.app = express();
-    this.port = process.env.API_PORT || 3000;
+    this.port = process.env.PORT || 3000;
     this.pre = '/api';
 
     this.middlewares();
@@ -38,6 +39,7 @@ export class Servidor {
       gastos:     `${this.pre}/gastos`,
       auth:       `${this.pre}/auth`,
       reportes:   `${this.pre}/reportes`,
+      contabilidad: `${this.pre}/contabilidad`,
     };
 
     this.routes();
@@ -60,6 +62,10 @@ export class Servidor {
     this.app.use(this.rutas.gastos, gastosRoutes);
     this.app.use(this.rutas.auth, authRoutes);
     this.app.use(this.rutas.reportes, reportesRoutes);
+    this.app.use(this.rutas.contabilidad, contabilidadRoutes);
+    
+    // Alias para compatibilidad con el frontend antiguo
+    this.app.use(`${this.pre}/egresos`, contabilidadRoutes);
 
     // Ruta raíz de la API
     this.app.get(this.pre, (req, res) => {
