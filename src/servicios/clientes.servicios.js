@@ -57,7 +57,7 @@ export const ClienteServices = {
   registroRecepcion: async (data) => {
     const { 
         cedula_rif, nombre, apellido, telefono, direccion, correo,
-        placa, marca, modelo, ano, kilometraje, gasolina,
+        placa, marca, modelo, ano, kilometraje, capacidad_tanque,
         vehiculos_extra = []
     } = data;
 
@@ -93,8 +93,7 @@ export const ClienteServices = {
             modelo: modelo || '',
             ano: ano ? parseInt(ano) : null,
             kilometraje: kilometraje ? parseInt(kilometraje) : null,
-            capacidad_tanque: gasolina || '',
-            cedula_rif: cedula_rif
+            capacidad_tanque: capacidad_tanque || ''
           },
           create: {
             placa: placa,
@@ -102,9 +101,8 @@ export const ClienteServices = {
             modelo: modelo || '',
             ano: ano ? parseInt(ano) : null,
             kilometraje: kilometraje ? parseInt(kilometraje) : null,
-            capacidad_tanque: gasolina || '',
-            id_cliente: cliente.id_cliente,
-            cedula_rif: cedula_rif
+            capacidad_tanque: capacidad_tanque || '',
+            id_cliente: cliente.id_cliente
           }
         });
         console.log('Carro principal guardado:', carroPrincipal);
@@ -121,8 +119,7 @@ export const ClienteServices = {
                 modelo: v.modelo || '',
                 ano: v.ano ? parseInt(v.ano) : null,
                 kilometraje: v.kilometraje ? parseInt(v.kilometraje) : null,
-                capacidad_tanque: v.gasolina || '',
-                cedula_rif: cedula_rif
+                capacidad_tanque: v.capacidad_tanque || '',
               },
               create: {
                 placa: v.placa,
@@ -130,9 +127,8 @@ export const ClienteServices = {
                 modelo: v.modelo || '',
                 ano: v.ano ? parseInt(v.ano) : null,
                 kilometraje: v.kilometraje ? parseInt(v.kilometraje) : null,
-                capacidad_tanque: v.gasolina || '',
+                capacidad_tanque: v.capacidad_tanque || '',
                 id_cliente: cliente.id_cliente,
-                cedula_rif: cedula_rif
               }
             });
             vehiculosCreados.push(vehiculoExtra);

@@ -49,6 +49,7 @@ export const OrdenServices = {
           tiene_radio: Boolean(data.tiene_radio),
           tiene_rayones: Boolean(data.tiene_rayones),
           observaciones: data.observaciones,
+          diagnostico_tecnico: data.diagnostico_tecnico || null,
           estado: data.estado || 'recepcion'
         }
       });
