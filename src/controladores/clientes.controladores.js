@@ -18,25 +18,25 @@ export class ClienteController {
         return res.status(status).json({ message, data });
     };
 
+    registroRecepcion = async (req, res) => {
+        const { message, status, data } = await ClienteServices.registroRecepcion(req.body);
+        return res.status(status).json({ message, data });
+    };
+
     created = async (req, res) => {
         const { message, status, data } = await ClienteServices.create(req.body);
         return res.status(status).json({ message, data });
     };
 
-    updated = async (req, res) => {
-        const { id } = req.params;
-        const { message, status, data } = await ClienteServices.update(id, req.body);
-        return res.status(status).json({ message, data });
-    };
+updated = async (req, res) => {
+    const { id } = req.params;
+    const { message, status, data } = await ClienteServices.update(id, req.body);
+    return res.status(status).json({ message, data });
+};
 
     deleted = async (req, res) => {
         const { id } = req.params;
         const { message, status, data } = await ClienteServices.delete(id);
-        return res.status(status).json({ message, data });
-    };
-
-    registroRecepcion = async (req, res) => {
-        const { message, status, data } = await ClienteServices.registroRecepcion(req.body);
         return res.status(status).json({ message, data });
     };
 }

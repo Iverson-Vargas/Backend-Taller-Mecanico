@@ -7,16 +7,11 @@ const router = Router();
 const controller = new ClienteController();
 const validator = new ClienteValidator();
 
-// Consulta de estado por cédula (Frontend EstadoCliente)
 router.get('/consulta/:cedula', ...validator.validateCedula, validateFields, controller.consultaPorCedula);
-
-// CRUD
 router.get('/', controller.getAll);
 router.get('/:id', ...validator.validateClienteId, validateFields, controller.getOne);
 
 router.post('/', ...validator.validateCliente, validateFields, controller.created);
-
-// Registro de recepción: cliente + vehículo en una transacción
 router.post('/recepcion', ...validator.validateRecepcion, validateFields, controller.registroRecepcion);
 
 router.put('/:id', ...validator.validateClienteId, validateFields, controller.updated);

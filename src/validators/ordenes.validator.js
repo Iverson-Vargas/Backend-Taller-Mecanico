@@ -7,11 +7,10 @@ export class OrdenValidator {
 
   validateOrden = [
     body('placa_carro', 'La placa del vehículo es requerida').notEmpty().trim(),
-    body('diagnostico_inicial', 'El diagnóstico inicial es obligatorio').notEmpty().trim(),
+    body('falla_declarada', 'La falla declarada es requerida').notEmpty().trim(),
     body('estado', 'Estado inválido').optional().isIn([
       'recepcion', 'en_espera', 'en_reparacion', 'esperando_repuestos', 'finalizada', 'facturada', 'entregada'
-    ]),
-    body('prioridad', 'Prioridad inválida').optional().isIn(['urgente', 'alta', 'normal', 'baja'])
+    ])
   ];
 
   validateEstado = [
