@@ -1,13 +1,37 @@
 import { prisma } from '../config/prisma.config.js';
 
 export const EmpleadoServices = {
-  getAll: async () => {
+  getAll: async (startDate, endDate) => {
     try {
-      const empleados = await prisma.empleado.findMany({ include: { nominas: true } });
-      return { message: 'Empleados encontrados', status: 200, data: { empleados, total: empleados.length } };
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.fecha_creacion = {
+          gte: new Date(startDate),
+          lte: new Date(endDate + 'T23:59:59.999Z')
+        };
+      }
+
+      const empleados = await prisma.empleado.findMany({
+        include: {
+          nominas: true,
+          _count: {
+            select: {
+              ordenes: {
+                where: dateFilter
+              }
+            }
+          }
+        }
+      });
+      return {
+        success: true,
+        message: 'Empleados encontrados',
+        status: 200,
+        data: { empleados, total: empleados.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener empleados', status: 500 };
+      return { success: false, error: 'Error al obtener empleados', status: 500 };
     }
   },
 
@@ -15,13 +39,20 @@ export const EmpleadoServices = {
     try {
       const empleado = await prisma.empleado.findUnique({
         where: { id_empleado: id },
-        include: { nominas: true, ordenes_servicio: true }
+        include: { nominas: true, ordenes: true }
       });
-      if (!empleado) return { message: 'Empleado no encontrado', status: 404, data: {} };
-      return { message: 'Empleado encontrado', status: 200, data: { empleado } };
+      if (!empleado) {
+        return { success: false, error: 'Empleado no encontrado', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Empleado encontrado',
+        status: 200,
+        data: { empleado }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener empleado', status: 500 };
+      return { success: false, error: 'Error al obtener empleado', status: 500 };
     }
   },
 
@@ -40,10 +71,15 @@ export const EmpleadoServices = {
           monto_comision_fija: empleadoData.monto_comision_fija || null
         }
       });
-      return { message: 'Empleado creado exitosamente', status: 201, data: { empleado: nuevo } };
+      return {
+        success: true,
+        message: 'Empleado creado exitosamente',
+        status: 201,
+        data: { empleado: nuevo }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al crear empleado', status: 500 };
+      return { success: false, error: 'Error al crear empleado', status: 500 };
     }
   },
 
@@ -53,10 +89,15 @@ export const EmpleadoServices = {
         where: { id_empleado: id },
         data: empleadoData
       });
-      return { message: 'Empleado actualizado', status: 200, data: { empleado: actualizado } };
+      return {
+        success: true,
+        message: 'Empleado actualizado',
+        status: 200,
+        data: { empleado: actualizado }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al actualizar empleado', status: 500 };
+      return { success: false, error: 'Error al actualizar empleado', status: 500 };
     }
   },
 
@@ -76,11 +117,11 @@ export const EmpleadoServices = {
       });
 
       if (!orden) {
-        return { message: 'Orden no encontrada', status: 404 };
+        return { success: false, error: 'Orden no encontrada', status: 404 };
       }
 
       if (!orden.mecanico || !orden.mecanico.aplica_comision) {
-        return { message: 'El mecánico no aplica a comisión', status: 400 };
+        return { success: false, error: 'El mecánico no aplica a comisión', status: 400 };
       }
 
       // Calcular el total de mano de obra (suma de precios aplicados)
@@ -103,6 +144,7 @@ export const EmpleadoServices = {
       });
 
       return {
+        success: true,
         message: 'Comisión calculada y registrada',
         status: 200,
         data: {
@@ -116,7 +158,7 @@ export const EmpleadoServices = {
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular comisión', status: 500 };
+      return { success: false, error: 'Error al calcular comisión', status: 500 };
     }
   },
 
@@ -126,10 +168,15 @@ export const EmpleadoServices = {
         where: { id_empleado: id },
         orderBy: { fecha_pago: 'desc' }
       });
-      return { message: 'Historial de comisiones', status: 200, data: { historial } };
+      return {
+        success: true,
+        message: 'Historial de comisiones obtenido',
+        status: 200,
+        data: { historial, total: historial.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al consultar historial', status: 500 };
+      return { success: false, error: 'Error al consultar historial de comisiones', status: 500 };
     }
   }
 };

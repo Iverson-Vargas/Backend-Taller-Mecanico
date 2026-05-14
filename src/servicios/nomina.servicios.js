@@ -4,10 +4,15 @@ export const NominaServices = {
   getResumen: async () => {
     try {
       const empleados = await prisma.empleado.findMany({ include: { nominas: true } });
-      return { message: 'Resumen de nómina obtenido', status: 200, data: { empleados } };
+      return {
+        success: true,
+        message: 'Resumen de nómina obtenido',
+        status: 200,
+        data: { empleados, total: empleados.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener resumen de nómina', status: 500 };
+      return { success: false, error: 'Error al obtener resumen de nómina', status: 500 };
     }
   },
 
@@ -17,10 +22,15 @@ export const NominaServices = {
         include: { empleado: true },
         orderBy: { fecha_pago: 'desc' }
       });
-      return { message: 'Historial de nómina obtenido', status: 200, data: { historial } };
+      return {
+        success: true,
+        message: 'Historial de nómina obtenido',
+        status: 200,
+        data: { historial, total: historial.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener historial', status: 500 };
+      return { success: false, error: 'Error al obtener historial de nómina', status: 500 };
     }
   }
 };

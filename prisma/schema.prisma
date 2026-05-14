@@ -109,6 +109,7 @@ model Inventario {
   descripcion               String?                @db.VarChar(200)
   stock_actual              Int                    @default(0)
   precio_venta_sugerido     Decimal?               @db.Decimal(12, 2) // Retained
+  precio_compra             Decimal?               @db.Decimal(12, 2)
   detalles                  DetalleOrdenRepuesto[]
   detalle_compras           DetalleCompra[]
   detalle_factura_repuestos DetalleFacturaRepuesto[]

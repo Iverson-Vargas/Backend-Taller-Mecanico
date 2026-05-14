@@ -17,15 +17,15 @@ export const ReporteServices = {
       // Pasivos: Comisiones pendientes (empleados con comisiones no liquidadas)
       const empleados = await prisma.empleado.findMany({
         where: { aplica_comision: true },
-        include: { nominas: true, ordenes_servicio: { include: { detalle_orden_servicios: true } } }
+        include: { nominas: true, ordenes: { include: { detalles_servicios: true } } }
       });
 
       let totalPasivosLaborales = 0;
       for (const emp of empleados) {
         const totalComisionesPagadas = emp.nominas.reduce((acc, n) => acc + Number(n.monto_comision || 0), 0);
         let totalComisionesGeneradas = 0;
-        for (const orden of emp.ordenes_servicio) {
-          const manoObra = orden.detalle_orden_servicios.reduce((acc, d) => acc + Number(d.precio_aplicado || 0), 0);
+        for (const orden of emp.ordenes) {
+          const manoObra = orden.detalles_servicios.reduce((acc, d) => acc + Number(d.precio_aplicado || 0), 0);
           totalComisionesGeneradas += manoObra * (Number(emp.monto_comision_fija || 0) / 100);
         }
         totalPasivosLaborales += Math.max(0, totalComisionesGeneradas - totalComisionesPagadas);
@@ -38,6 +38,7 @@ export const ReporteServices = {
       const patrimonio = totalIngresos + valorInventario - totalPasivosLaborales - totalGastos;
 
       return {
+        success: true,
         message: 'Balance general calculado',
         status: 200,
         data: {
@@ -49,22 +50,35 @@ export const ReporteServices = {
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular balance', status: 500 };
+      return { success: false, error: 'Error al calcular balance', status: 500 };
     }
   },
 
   /**
    * Estado de Resultados: Ingresos totales vs. Gastos (Nómina + Repuestos + Servicios básicos).
    */
-  getEstadoResultados: async () => {
+  getEstadoResultados: async (startDate, endDate) => {
     try {
-      const facturas = await prisma.factura.findMany();
+      const dateFilterFactura = {};
+      const dateFilterGasto = {};
+      const dateFilterNomina = {};
+
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate + 'T23:59:59.999Z');
+
+        dateFilterFactura.fecha_emision = { gte: start, lte: end };
+        dateFilterGasto.fecha = { gte: start, lte: end };
+        dateFilterNomina.fecha_pago = { gte: start, lte: end };
+      }
+
+      const facturas = await prisma.factura.findMany({ where: dateFilterFactura });
       const totalIngresos = facturas.reduce((acc, f) => acc + Number(f.monto_total), 0);
 
-      const nominas = await prisma.nomina.findMany();
+      const nominas = await prisma.nomina.findMany({ where: dateFilterNomina });
       const totalNomina = nominas.reduce((acc, n) => acc + Number(n.monto_comision || 0), 0);
 
-      const gastos = await prisma.gasto.findMany();
+      const gastos = await prisma.gasto.findMany({ where: dateFilterGasto });
       const totalGastos = gastos.reduce((acc, g) => acc + Number(g.monto || 0), 0);
 
       const gastosPorCategoria = {};
@@ -77,6 +91,7 @@ export const ReporteServices = {
       const utilidadNeta = totalIngresos - totalEgresos;
 
       return {
+        success: true,
         message: 'Estado de resultados calculado',
         status: 200,
         data: {
@@ -88,17 +103,31 @@ export const ReporteServices = {
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular estado de resultados', status: 500 };
+      return { success: false, error: 'Error al calcular estado de resultados', status: 500 };
     }
   },
 
   /**
    * Rentabilidad por Servicio: Qué reparaciones generan mayor margen.
    */
-  getRentabilidadServicios: async () => {
+  getRentabilidadServicios: async (startDate, endDate) => {
     try {
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.fecha_creacion = {
+          gte: new Date(startDate),
+          lte: new Date(endDate + 'T23:59:59.999Z')
+        };
+      }
+
       const servicios = await prisma.servicio.findMany({
-        include: { detalle_orden_servicios: true }
+        include: {
+          detalle_orden_servicios: {
+            where: {
+              orden: dateFilter
+            }
+          }
+        }
       });
 
       const rentabilidad = servicios.map(servicio => {
@@ -118,17 +147,17 @@ export const ReporteServices = {
         };
       });
 
-      // Ordenar por ingreso total descendente
       rentabilidad.sort((a, b) => b.ingreso_total - a.ingreso_total);
 
       return {
+        success: true,
         message: 'Rentabilidad por servicio calculada',
         status: 200,
-        data: { servicios: rentabilidad }
+        data: { servicios: rentabilidad, total: rentabilidad.length }
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular rentabilidad', status: 500 };
+      return { success: false, error: 'Error al calcular rentabilidad', status: 500 };
     }
   }
 };

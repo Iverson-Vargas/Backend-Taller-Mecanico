@@ -9,10 +9,15 @@ export const FacturaServices = {
         },
         orderBy: { fecha_emision: 'desc' }
       });
-      return { message: 'Facturas encontradas', status: 200, data: facturas };
+      return {
+        success: true,
+        message: 'Facturas encontradas',
+        status: 200,
+        data: { facturas, total: facturas.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener facturas', status: 500 };
+      return { success: false, error: 'Error al obtener facturas', status: 500 };
     }
   },
 
@@ -25,11 +30,18 @@ export const FacturaServices = {
           detalle_factura_repuestos: { include: { repuesto: true } }
         }
       });
-      if (!factura) return { message: 'Factura no encontrada', status: 404, data: {} };
-      return { message: 'Factura encontrada', status: 200, data: { factura } };
+      if (!factura) {
+        return { success: false, error: 'Factura no encontrada', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Factura encontrada',
+        status: 200,
+        data: { factura }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener factura', status: 500 };
+      return { success: false, error: 'Error al obtener factura', status: 500 };
     }
   },
 
@@ -38,12 +50,14 @@ export const FacturaServices = {
       const { id_orden, monto_total, metodo_pago, subtotal, monto_iva, monto_igtf, tasa_cambio } = facturaData;
 
       if (!id_orden || monto_total === undefined || monto_total === null) {
-        return { message: 'Faltan datos requeridos (id_orden, monto_total)', status: 400 };
+        return { success: false, error: 'Faltan datos requeridos (id_orden, monto_total)', status: 400 };
       }
 
       // Verificar que la orden existe
       const orden = await prisma.ordenServicio.findUnique({ where: { id_orden } });
-      if (!orden) return { message: 'Orden no encontrada', status: 404 };
+      if (!orden) {
+        return { success: false, error: 'Orden no encontrada', status: 404 };
+      }
 
       // Transacción: crear factura + actualizar estado de la orden
       const [nuevaFactura, ordenActualizada] = await prisma.$transaction([
@@ -65,6 +79,7 @@ export const FacturaServices = {
       ]);
 
       return {
+        success: true,
         message: 'Factura generada exitosamente',
         status: 201,
         data: { factura: nuevaFactura, orden: ordenActualizada }
@@ -72,9 +87,9 @@ export const FacturaServices = {
     } catch (error) {
       console.error(error);
       if (error.code === 'P2002') {
-        return { message: 'Ya existe una factura para esta orden', status: 400 };
+        return { success: false, error: 'Ya existe una factura para esta orden', status: 400 };
       }
-      return { message: 'Error al crear factura', status: 500 };
+      return { success: false, error: 'Error al crear factura', status: 500 };
     }
   }
 };
