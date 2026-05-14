@@ -5,9 +5,9 @@ export class ClienteValidator {
     body('cedula_rif', 'La cédula/RIF es requerida').notEmpty().trim(),
     body('nombre', 'El nombre es requerido').notEmpty().trim(),
     body('apellido', 'El apellido es requerido').notEmpty().trim(),
-    body('correo', 'Correo inválido').optional({ checkFalsy: true }).isEmail(),
     body('placa', 'La placa del vehículo es requerida').notEmpty().trim(),
-    body('marca', 'La marca del vehículo es requerida').notEmpty().trim()
+    body('marca', 'La marca del vehículo es requerida').notEmpty().trim(),
+    body('modelo', 'El modelo es requerido').notEmpty().trim()
   ];
   
   validateCedula = [
@@ -20,6 +20,8 @@ export class ClienteValidator {
   
   validateCliente = [
     body('cedula_rif', 'La cédula/RIF es requerida').notEmpty().trim(),
-    body('nombre', 'El nombre es requerido').notEmpty().trim()
+    body('nombre', 'El nombre es requerido').notEmpty().trim(),
+    body('apellido', 'El apellido es requerido').notEmpty().trim(),
+    body('correo', 'Correo inválido').optional({ checkFalsy: true }).isEmail(),
   ];
 }
