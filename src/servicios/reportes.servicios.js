@@ -38,6 +38,7 @@ export const ReporteServices = {
       const patrimonio = totalIngresos + valorInventario - totalPasivosLaborales - totalGastos;
 
       return {
+        success: true,
         message: 'Balance general calculado',
         status: 200,
         data: {
@@ -49,7 +50,7 @@ export const ReporteServices = {
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular balance', status: 500 };
+      return { success: false, error: 'Error al calcular balance', status: 500 };
     }
   },
 
@@ -65,7 +66,7 @@ export const ReporteServices = {
       if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate + 'T23:59:59.999Z');
-        
+
         dateFilterFactura.fecha_emision = { gte: start, lte: end };
         dateFilterGasto.fecha = { gte: start, lte: end };
         dateFilterNomina.fecha_pago = { gte: start, lte: end };
@@ -90,6 +91,7 @@ export const ReporteServices = {
       const utilidadNeta = totalIngresos - totalEgresos;
 
       return {
+        success: true,
         message: 'Estado de resultados calculado',
         status: 200,
         data: {
@@ -101,7 +103,7 @@ export const ReporteServices = {
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular estado de resultados', status: 500 };
+      return { success: false, error: 'Error al calcular estado de resultados', status: 500 };
     }
   },
 
@@ -112,19 +114,19 @@ export const ReporteServices = {
     try {
       const dateFilter = {};
       if (startDate && endDate) {
-        dateFilter.createdAt = {
+        dateFilter.fecha_creacion = {
           gte: new Date(startDate),
           lte: new Date(endDate + 'T23:59:59.999Z')
         };
       }
 
       const servicios = await prisma.servicio.findMany({
-        include: { 
+        include: {
           detalle_orden_servicios: {
             where: {
               orden: dateFilter
             }
-          } 
+          }
         }
       });
 
@@ -148,13 +150,14 @@ export const ReporteServices = {
       rentabilidad.sort((a, b) => b.ingreso_total - a.ingreso_total);
 
       return {
+        success: true,
         message: 'Rentabilidad por servicio calculada',
         status: 200,
-        data: { servicios: rentabilidad }
+        data: { servicios: rentabilidad, total: rentabilidad.length }
       };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al calcular rentabilidad', status: 500 };
+      return { success: false, error: 'Error al calcular rentabilidad', status: 500 };
     }
   }
 };

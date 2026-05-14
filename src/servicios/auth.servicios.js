@@ -4,7 +4,7 @@ export const AuthServices = {
   login: async (usuario, password) => {
     try {
       if (!usuario || !password) {
-        return { message: 'Faltan credenciales', status: 400 };
+        return { success: false, error: 'Faltan credenciales', status: 400 };
       }
 
       const usuarioEncontrado = await prisma.usuario.findFirst({
@@ -19,10 +19,10 @@ export const AuthServices = {
 
       if (usuarioEncontrado) {
         return {
+          success: true,
           message: '¡Bienvenido al sistema!',
           status: 200,
           data: {
-            success: true,
             empleado: {
               nombre: usuarioEncontrado.nombre,
               apellido: usuarioEncontrado.apellido,
@@ -32,11 +32,11 @@ export const AuthServices = {
           }
         };
       } else {
-        return { message: 'Usuario o contraseña incorrectos', status: 401, data: { success: false } };
+        return { success: false, error: 'Usuario o contraseña incorrectos', status: 401 };
       }
     } catch (error) {
       console.error('Error al autenticar:', error);
-      return { message: 'Error en el servidor durante la autenticación', status: 500 };
+      return { success: false, error: 'Error en el servidor durante la autenticación', status: 500 };
     }
   }
 };
