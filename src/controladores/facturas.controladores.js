@@ -2,18 +2,20 @@ import { FacturaServices } from '../servicios/facturas.servicios.js';
 
 export class FacturaController {
   getAll = async (req, res) => {
-    const { status, data } = await FacturaServices.getAll();
-    return res.status(status).json(data);
+    const { success, message, status, data, error } = await FacturaServices.getAll();
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
   };
 
   getOne = async (req, res) => {
-    const { status, data } = await FacturaServices.getById(Number(req.params.id));
-    return res.status(status).json(data.factura || data);
+    const { success, message, status, data, error } = await FacturaServices.getById(Number(req.params.id));
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
   };
 
   created = async (req, res) => {
-    const { message, status, data } = await FacturaServices.create(req.body);
-    if (status >= 400) return res.status(status).json({ error: message });
-    return res.status(status).json({ mensaje: message, ...data });
+    const { success, message, status, data, error } = await FacturaServices.create(req.body);
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
   };
 }

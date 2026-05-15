@@ -4,12 +4,18 @@ export const OrdenServices = {
   getFinalizadas: async () => {
     try {
       const ordenes = await prisma.ordenServicio.findMany({
-        where: { estado: 'finalizada' },
+        where: { estado: { in: ['finalizada', 'Finalizada'] } },
         include: { carro: { include: { cliente: true } } }
       });
-      return { message: 'Órdenes finalizadas obtenidas', status: 200, data: ordenes };
+      return {
+        success: true,
+        message: 'Órdenes finalizadas obtenidas',
+        status: 200,
+        data: { ordenes, total: ordenes.length }
+      };
     } catch (error) {
-      return { message: 'Error al obtener órdenes finalizadas', status: 500 };
+      console.error(error);
+      return { success: false, error: 'Error al obtener órdenes finalizadas', status: 500 };
     }
   },
 
@@ -18,9 +24,15 @@ export const OrdenServices = {
       const ordenes = await prisma.ordenServicio.findMany({
         include: { carro: { include: { cliente: true } }, mecanico: true }
       });
-      return { message: 'Órdenes obtenidas', status: 200, data: ordenes };
+      return {
+        success: true,
+        message: 'Órdenes obtenidas',
+        status: 200,
+        data: { ordenes, total: ordenes.length }
+      };
     } catch (error) {
-      return { message: 'Error al obtener órdenes', status: 500 };
+      console.error(error);
+      return { success: false, error: 'Error al obtener órdenes', status: 500 };
     }
   },
 
@@ -28,12 +40,25 @@ export const OrdenServices = {
     try {
       const orden = await prisma.ordenServicio.findUnique({
         where: { id_orden: Number(id) },
-        include: { carro: { include: { cliente: true } }, mecanico: true, detalles_repuestos: true, detalles_servicios: true }
+        include: { 
+          carro: { include: { cliente: true } }, 
+          mecanico: true, 
+          detalles_repuestos: { include: { repuesto: true } }, 
+          detalles_servicios: { include: { servicio: true } } 
+        }
       });
-      if (!orden) return { message: 'Orden no encontrada', status: 404 };
-      return { message: 'Orden obtenida', status: 200, data: orden };
+      if (!orden) {
+        return { success: false, error: 'Orden no encontrada', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Orden obtenida',
+        status: 200,
+        data: { orden }
+      };
     } catch (error) {
-      return { message: 'Error al obtener orden', status: 500 };
+      console.error(error);
+      return { success: false, error: 'Error al obtener orden', status: 500 };
     }
   },
 
@@ -52,10 +77,15 @@ export const OrdenServices = {
           estado: data.estado || 'recepcion'
         }
       });
-      return { message: 'Orden creada', status: 201, data: nueva };
+      return {
+        success: true,
+        message: 'Orden creada',
+        status: 201,
+        data: { orden: nueva }
+      };
     } catch (error) {
       console.error("Error en orden:", error);
-      return { message: 'Error al crear orden', status: 500 };
+      return { success: false, error: 'Error al crear orden', status: 500 };
     }
   },
 
@@ -65,18 +95,30 @@ export const OrdenServices = {
         where: { id_orden: Number(id) },
         data
       });
-      return { message: 'Orden actualizada', status: 200, data: orden };
+      return {
+        success: true,
+        message: 'Orden actualizada',
+        status: 200,
+        data: { orden }
+      };
     } catch (error) {
-      return { message: 'Error al actualizar orden', status: 500 };
+      console.error(error);
+      return { success: false, error: 'Error al actualizar orden', status: 500 };
     }
   },
 
   delete: async (id) => {
     try {
       await prisma.ordenServicio.delete({ where: { id_orden: Number(id) } });
-      return { message: 'Orden eliminada', status: 200 };
+      return {
+        success: true,
+        message: 'Orden eliminada',
+        status: 200,
+        data: null
+      };
     } catch (error) {
-      return { message: 'Error al eliminar orden', status: 500 };
+      console.error(error);
+      return { success: false, error: 'Error al eliminar orden', status: 500 };
     }
   }
 };

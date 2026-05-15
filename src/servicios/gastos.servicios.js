@@ -7,21 +7,33 @@ export const GastoServices = {
         include: { usuario: { select: { nombre: true, apellido: true } } },
         orderBy: { fecha: 'desc' }
       });
-      return { message: 'Gastos encontrados', status: 200, data: { gastos, total: gastos.length } };
+      return {
+        success: true,
+        message: 'Gastos encontrados',
+        status: 200,
+        data: { gastos, total: gastos.length }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener gastos', status: 500 };
+      return { success: false, error: 'Error al obtener gastos', status: 500 };
     }
   },
 
   getById: async (id) => {
     try {
       const gasto = await prisma.gasto.findUnique({ where: { id_gasto: id } });
-      if (!gasto) return { message: 'Gasto no encontrado', status: 404, data: {} };
-      return { message: 'Gasto encontrado', status: 200, data: { gasto } };
+      if (!gasto) {
+        return { success: false, error: 'Gasto no encontrado', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Gasto encontrado',
+        status: 200,
+        data: { gasto }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al obtener gasto', status: 500 };
+      return { success: false, error: 'Error al obtener gasto', status: 500 };
     }
   },
 
@@ -35,30 +47,45 @@ export const GastoServices = {
           registrado_por_usuario: gastoData.registrado_por_usuario || null
         }
       });
-      return { message: 'Gasto registrado exitosamente', status: 201, data: { gasto: nuevo } };
+      return {
+        success: true,
+        message: 'Gasto registrado exitosamente',
+        status: 201,
+        data: { gasto: nuevo }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al registrar gasto', status: 500 };
+      return { success: false, error: 'Error al registrar gasto', status: 500 };
     }
   },
 
   update: async (id, gastoData) => {
     try {
       const actualizado = await prisma.gasto.update({ where: { id_gasto: id }, data: gastoData });
-      return { message: 'Gasto actualizado', status: 200, data: { gasto: actualizado } };
+      return {
+        success: true,
+        message: 'Gasto actualizado',
+        status: 200,
+        data: { gasto: actualizado }
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al actualizar gasto', status: 500 };
+      return { success: false, error: 'Error al actualizar gasto', status: 500 };
     }
   },
 
   delete: async (id) => {
     try {
       await prisma.gasto.delete({ where: { id_gasto: id } });
-      return { message: 'Gasto eliminado', status: 200 };
+      return {
+        success: true,
+        message: 'Gasto eliminado',
+        status: 200,
+        data: null
+      };
     } catch (error) {
       console.error(error);
-      return { message: 'Error al eliminar gasto', status: 500 };
+      return { success: false, error: 'Error al eliminar gasto', status: 500 };
     }
   }
 };

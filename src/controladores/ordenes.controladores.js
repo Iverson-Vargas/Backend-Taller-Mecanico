@@ -1,36 +1,42 @@
 import { OrdenServices } from '../servicios/ordenes.servicios.js';
 
 export class OrdenController {
-    getFinalizadas = async (req, res) => {
-        const { message, status, data } = await OrdenServices.getFinalizadas();
-        return res.status(status).json({ message, data });
-    };
+  getFinalizadas = async (req, res) => {
+    const { success, message, status, data, error } = await OrdenServices.getFinalizadas();
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 
-    getAll = async (req, res) => {
-        const { message, status, data } = await OrdenServices.getAll();
-        return res.status(status).json({ message, data });
-    };
+  getAll = async (req, res) => {
+    const { success, message, status, data, error } = await OrdenServices.getAll();
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 
-    getOne = async (req, res) => {
-        const { id } = req.params;
-        const { message, status, data } = await OrdenServices.getOne(id);
-        return res.status(status).json({ message, data });
-    };
+  getOne = async (req, res) => {
+    const { id } = req.params;
+    const { success, message, status, data, error } = await OrdenServices.getOne(id);
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 
-    created = async (req, res) => {
-        const { message, status, data } = await OrdenServices.create(req.body);
-        return res.status(status).json({ message, data });
-    };
+  created = async (req, res) => {
+    const { success, message, status, data, error } = await OrdenServices.create(req.body);
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 
-    updated = async (req, res) => {
-        const { id } = req.params;
-        const { message, status, data } = await OrdenServices.update(id, req.body);
-        return res.status(status).json({ message, data });
-    };
+  updated = async (req, res) => {
+    const { id } = req.params;
+    const { success, message, status, data, error } = await OrdenServices.update(id, req.body);
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 
-    deleted = async (req, res) => {
-        const { id } = req.params;
-        const { message, status, data } = await OrdenServices.delete(id);
-        return res.status(status).json({ message, data });
-    };
+  deleted = async (req, res) => {
+    const { id } = req.params;
+    const { success, message, status, data, error } = await OrdenServices.delete(id);
+    if (!success) return res.status(status).json({ success, error });
+    return res.status(status).json({ success, message, data });
+  };
 }

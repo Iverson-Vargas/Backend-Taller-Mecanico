@@ -5,26 +5,32 @@ export const ClienteServices = {
     try {
       // Limpiar cédula (solo números)
       const cedulaLimpia = cedula.replace(/[^0-9]/g, '');
-      
+
       console.log('Buscando cédula:', cedulaLimpia);
-      
-      // Usar findFirst en lugar de findUnique
+
       const cliente = await prisma.cliente.findFirst({
-        where: { 
+        where: {
           cedula_rif: {
             contains: cedulaLimpia
           }
         },
         include: { carros: true }
       });
-      
+
       console.log('Cliente encontrado:', cliente);
-      
-      if (!cliente) return { message: 'Cédula no encontrada', status: 404, data: null };
-      return { message: 'Cliente encontrado', status: 200, data: cliente };
+
+      if (!cliente) {
+        return { success: false, error: 'Cédula no encontrada', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Cliente encontrado',
+        status: 200,
+        data: { cliente }
+      };
     } catch (error) {
       console.error('Error en consultaPorCedula:', error);
-      return { message: 'Error al consultar cliente', status: 500, data: null };
+      return { success: false, error: 'Error al consultar cliente', status: 500 };
     }
   },
 
@@ -33,32 +39,44 @@ export const ClienteServices = {
       const clientes = await prisma.cliente.findMany({
         include: { carros: true }
       });
-      return { message: 'Clientes obtenidos', status: 200, data: clientes };
+      return {
+        success: true,
+        message: 'Clientes obtenidos',
+        status: 200,
+        data: { clientes, total: clientes.length }
+      };
     } catch (error) {
       console.error('Error al obtener clientes:', error);
-      return { message: 'Error al obtener clientes', status: 500, data: null };
+      return { success: false, error: 'Error al obtener clientes', status: 500 };
     }
   },
 
   getOne: async (id) => {
     try {
-      const cliente = await prisma.cliente.findUnique({ 
+      const cliente = await prisma.cliente.findUnique({
         where: { id_cliente: Number(id) },
         include: { carros: true }
       });
-      if (!cliente) return { message: 'Cliente no encontrado', status: 404, data: null };
-      return { message: 'Cliente obtenido', status: 200, data: cliente };
+      if (!cliente) {
+        return { success: false, error: 'Cliente no encontrado', status: 404 };
+      }
+      return {
+        success: true,
+        message: 'Cliente obtenido',
+        status: 200,
+        data: { cliente }
+      };
     } catch (error) {
       console.error('Error al obtener cliente:', error);
-      return { message: 'Error al obtener cliente', status: 500, data: null };
+      return { success: false, error: 'Error al obtener cliente', status: 500 };
     }
   },
 
   registroRecepcion: async (data) => {
-    const { 
-        cedula_rif, nombre, apellido, telefono, direccion, correo,
-        placa, marca, modelo, ano, kilometraje, gasolina,
-        vehiculos_extra = []
+    const {
+      cedula_rif, nombre, apellido, telefono, direccion, correo,
+      placa, marca, modelo, ano, kilometraje, gasolina,
+      vehiculos_extra = []
     } = data;
 
     try {
@@ -70,13 +88,13 @@ export const ClienteServices = {
 
         if (!cliente) {
           cliente = await tx.cliente.create({
-            data: { 
-              cedula_rif, 
-              nombre, 
-              apellido, 
-              telefono: telefono || '', 
-              direccion: direccion || '', 
-              correo: correo || '' 
+            data: {
+              cedula_rif,
+              nombre,
+              apellido,
+              telefono: telefono || '',
+              direccion: direccion || '',
+              correo: correo || ''
             }
           });
           console.log('Cliente creado:', cliente);
@@ -140,58 +158,70 @@ export const ClienteServices = {
           }
         }
 
-        return { 
-          cliente, 
-          carro_principal: carroPrincipal, 
-          vehiculos_extra: vehiculosCreados 
+        return {
+          cliente,
+          carro_principal: carroPrincipal,
+          vehiculos_extra: vehiculosCreados
         };
       });
 
-      return { 
-        message: 'Recepción exitosa: Cliente y vehículo(s) guardados correctamente', 
-        status: 201, 
-        data: resultado 
+      return {
+        success: true,
+        message: 'Recepción exitosa: Cliente y vehículo(s) guardados correctamente',
+        status: 201,
+        data: resultado
       };
     } catch (error) {
       console.error("Error en registroRecepcion:", error);
-      return { 
-        message: 'Error en el proceso de recepción: ' + error.message, 
-        status: 500, 
-        data: null 
-      };
+      return { success: false, error: `Error en el proceso de recepción: ${error.message}`, status: 500 };
     }
   },
 
   create: async (data) => {
     try {
       const cliente = await prisma.cliente.create({ data });
-      return { message: 'Cliente creado', status: 201, data: cliente };
+      return {
+        success: true,
+        message: 'Cliente creado',
+        status: 201,
+        data: { cliente }
+      };
     } catch (error) {
       console.error('Error al crear cliente:', error);
-      return { message: 'Error al crear cliente', status: 500, data: null };
+      return { success: false, error: 'Error al crear cliente', status: 500 };
     }
   },
 
   update: async (id, data) => {
     try {
-      const cliente = await prisma.cliente.update({ 
-        where: { id_cliente: Number(id) }, 
-        data 
+      const cliente = await prisma.cliente.update({
+        where: { id_cliente: Number(id) },
+        data
       });
-      return { message: 'Cliente actualizado', status: 200, data: cliente };
+      return {
+        success: true,
+        message: 'Cliente actualizado',
+        status: 200,
+        data: { cliente }
+      };
     } catch (error) {
       console.error('Error al actualizar cliente:', error);
-      return { message: 'Error al actualizar cliente', status: 500, data: null };
+      return { success: false, error: 'Error al actualizar cliente', status: 500 };
     }
   },
 
   delete: async (id) => {
     try {
       await prisma.cliente.delete({ where: { id_cliente: Number(id) } });
-      return { message: 'Cliente eliminado', status: 200, data: null };
+      return {
+        success: true,
+        message: 'Cliente eliminado',
+        status: 200,
+        data: null
+      };
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
-      return { message: 'Error al eliminar cliente', status: 500, data: null };
+      return { success: false, error: 'Error al eliminar cliente', status: 500 };
     }
   }
 };
